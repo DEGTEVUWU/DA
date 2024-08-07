@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 
 import { ButtonComponent } from "../components/ButtonComponent"
-import { InputField } from "../components/InputField"
+import { InputField } from "../components/ui/InputField"
 import { routes } from '../routes';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useRef } from 'react';
@@ -17,7 +17,7 @@ export const LoginPage = () => {
   const { t } = useTranslation();
   const { register, control, setFocus, handleSubmit, formState: { errors }, reset, clearErrors, getValues } = useForm<ILoginData>();
   const ref = useRef(null);
-  const { logIn, userData } = useAuth();
+  const { logIn, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const onSubmit = (data: ILoginData) => {
@@ -31,13 +31,15 @@ export const LoginPage = () => {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
-      });
+        const roles = data.user.roles.map((role) => role.name);
+        const id = data.user.idUser;
+        logIn({roles, id});
+        navigate(routes.documentsRoute());
+      })
+      .catch((error) => console.log(error));
   };
 
-
   useEffect(() => {
-
     setFocus('username');
   });
 

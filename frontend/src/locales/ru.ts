@@ -1,3 +1,6 @@
+import { FilesPage } from "../pages/files/FilesPage";
+import { UserDetailsPage } from "../pages/users/UserDetailsPage";
+
 export const ru = {
     header: {
       login: 'Войти',
@@ -7,7 +10,7 @@ export const ru = {
         search: 'Поиск',
         profile: 'Профиль',
         files: 'Файлы',
-        documents: 'Досументы',
+        documents: 'Документы',
         users: 'Пользователи',
       },
     },
@@ -46,17 +49,64 @@ export const ru = {
         roles: 'Роли',
       }
     },
-    documentsPage: {
-      tableHeader: {
-        number: 'Номер',
-        name: 'Название',
-        author: 'Автор',
-        type: 'Тип',
-        content: 'Содержание',
-        creationDate: 'Дата создания',
-        updateDate: 'Дата обновления',
-        actions: 'Действия',
-      }
+  documentsPage: {
+    title: 'Список документов',
+    createDocument: 'Создать документ',
+    tableHeader: {
+      number: 'Номер',
+      name: 'Название',
+      author: 'Автор',
+      type: 'Тип',
+      content: 'Содержание',
+      creationDate: 'Дата создания',
+      updateDate: 'Дата обновления',
+      actions: 'Действия',
+    }
+  },
+  filesPage: {
+    title: 'Список файлов',
+    addFile: 'Добавить файл',
+    tableHeader: {
+      fileName: 'Название',
+      author: 'Автор',
+      fileType: 'Тип',
+      creationDate: 'Дата создания',
+      updateDate: 'Дата обновления',
+      actions: 'Действия',
+    }
+  },
+  modal: {
+    deleteDocument: {
+      areYouSure: 'Вы уверены, что хотите удалить эту запись?',
     },
+    deleteUser: {
+      areYouSure: 'Вы уверены, что хотите удалить этого пользователя?',
+    },
+    createDocument: {
 
+    },
+    cancel: 'Отмена',
+    delete: 'Удалить',
+  },
+  documentDetailsPage: {
+    title: 'Информация о документе ',
+    number: 'Номер: ',
+    author: 'Автор: ',
+    type: 'Тип: ',
+    content: 'Содержание: ',
+    creationDate: 'Дата создания: ',
+    updateDate: 'Дата обновления: ',
+    delete: 'Удалить документ',
+    edit: 'Изменить документ',
+  },
+  userDetailsPage: {
+    title: 'Информация о пользователе ',
+    username: 'Имя пользователя: ',
+    name: 'Имя: ',
+    lastName: 'Фамилия: ',
+    email: 'e-mail: ',
+    roles: 'Роли: ',
+    delete: 'Удалить пользователя',
+    edit: 'Редактировать данные',
+  },
 };

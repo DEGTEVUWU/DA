@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { DetailedHTMLProps, ForwardedRef, forwardRef, HtmlHTMLAttributes, useState } from "react";
 import { FieldError } from "react-hook-form";
-import { ActionButton } from "./ActionButton";
+import { ActionButton } from "../ActionButton";
 
 export interface InputFieldProps extends DetailedHTMLProps<HtmlHTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   type?: 'text' | 'email' | 'password',
@@ -9,6 +9,7 @@ export interface InputFieldProps extends DetailedHTMLProps<HtmlHTMLAttributes<HT
   error?: FieldError,
   placeholder: string,
   showActionButton?: boolean,
+  value?: string | number,
 }
 
 export const InputField = forwardRef(({ type = "text", id, error, placeholder, className, showActionButton = false, ...props }: InputFieldProps, ref: ForwardedRef<HTMLInputElement>) => {
@@ -25,7 +26,7 @@ export const InputField = forwardRef(({ type = "text", id, error, placeholder, c
       <input
         type={inputType}
         id={id}
-        className={clsx(error && "border-red-500", "block p-2 border outline-sky-500 rounded-sm w-full focus:border-red-300 focus:ring focus:ring-sky-200 focus:ring-opacity-50")}
+        className={clsx(error && "border-red-500", "block p-2 border border-slate-300 outline-sky-500 rounded-sm w-full focus:ring focus:ring-sky-200 focus:ring-opacity-50")}
         placeholder={placeholder}
         {...props}
         ref={ref}

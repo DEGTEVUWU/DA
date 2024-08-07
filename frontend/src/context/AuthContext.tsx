@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, ReactNode, FC } from "react";
 import Cookies from "js-cookie";
-import { Role } from "../interfaces/interfaces";
+import { Role, RoleName } from "../interfaces/interfaces";
 
 // interface userData {
 //   jwtToken: string,
@@ -16,38 +16,47 @@ import { Role } from "../interfaces/interfaces";
 //   }
 // }
 
+interface ICurrentUser {
+  roles: RoleName[];
+  id: string;
+}
+
 interface IAuthContext {
-  logIn: (data: string) => void;
+  logIn: (data) => void;
   logOut: () => void;
-  userData: string | null;
+  isAuthenticated: boolean;
+  currentUser: ICurrentUser;
 }
 
 const initialContext = {
-  logIn: () => {},
-  logOut: () => {},
-  userData: '',
+  logIn: () => undefined,
+  logOut: () => undefined,
+  isAuthenticated: false,
+  currentUser: {
+    roles: ["ROLE_USER" as RoleName],
+    id: '',
+  },
 }
 
 export const AuthContext = createContext<IAuthContext>(initialContext);
 
 const AuthProvider = ({ children }: {children: ReactNode}) => {
-  const [userData, setUserData] = useState<string | null>(
-    (document.cookie as string) || null,
-  );
-  
-  const logIn = (data: string) => {
-    Cookies.set("token", data, { path: "/" });
-    setUserData(data);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<ICurrentUser>({ roles: ["ROLE_USER" as RoleName], id: ''});
+
+  const logIn = (currentUser: ICurrentUser) => {
+    setCurrentUser(currentUser);
+    setIsAuthenticated(true);
   };
   const logOut = () => {
-    Cookies.remove("token", { path: "/" });
-    setUserData(null);
+    setIsAuthenticated(false);
   };
 
   const value = {
     logIn,
     logOut,
-    userData,
+    isAuthenticated,
+    currentUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
