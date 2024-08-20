@@ -1,74 +1,55 @@
 import { useTranslation } from "react-i18next";
-import { ButtonComponent } from "../../components/ButtonComponent";
-import { ActionButton } from "../../components/ActionButton";
+import { ButtonComponent } from "../../components/ui/ButtonComponent";
+import { ActionButton } from "../../components/ui/ActionButton";
 import { useGetFilesQuery as getFiles } from "../../store/filesApi";
 import { routes } from "../../routes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-
-
-// const files = [
-//   {
-//     id: 1,
-//     filename: 'filename1',
-//     filetype: 'filetype1',
-//     author: 'author',
-//     // availableFor: number[],
-//     publicEntity: true,
-//     creationDate: "2024-10-04",
-//     updateDate: "2024-10-04",
-//   },
-//   {
-//     id: 2,
-//     filename: 'filename2',
-//     filetype: 'filetype2',
-//     author: 'author2',
-//     // availableFor: number[],
-//     publicEntity: true,
-//     creationDate: "2024-10-04",
-//     updateDate: "2024-10-04",
-//   },
-// ]
+import { useDispatch } from "react-redux";
+import { openModal } from "../../store/modalSlice";
 
 export const FilesPage = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const {data: files} = getFiles(currentUser.roles);
+  const { data: files } = getFiles(currentUser.roles);
 
-  console.log(files)
   const handleCreate = () => {
-
+    dispatch(openModal({ type: "uploadFile", open: true }))
   };
 
-  const handleEdit = (id: number): void => {
-
+  const handleDownload = (event, id: number): void => {
+    event.stopPropagation();
+    window.open(routes.fileDownloadPath(id), '_blank');
   };
 
-  const handleDelete = (id: number): void => {
-
+  const handleOverview = (event, id: number) => {
+    event.stopPropagation();
+    window.open(routes.viewFilePath(id), '_blank');
   };
+
 
   return (
     <div className="h-full p-8 flex flex-col">
-      <h1 className="text-sky-800 font-bold text-lg text-center">{t('filesPage.title')}</h1>
+      <h1 className="text-sky-600 font-bold text-lg text-center">{t('files.title')}</h1>
       <ButtonComponent
         variant="primary"
         className="my-5 ml-auto"
         onClick={handleCreate}
       >
-        {t('filesPage.addFile')}
+        {t('files.addFile')}
       </ButtonComponent>
       <table className="w-[100%] bg-white text-left rounded-md shadow-md">
         <thead className="uppercase text-sky-600 whitespace-nowrap">
           <tr className="border-b">
-            <th className="py-4 px-5 w-10">{t('filesPage.tableHeader.fileName')}</th>
-            <th className="py-4 px-5">{t('filesPage.tableHeader.fileType')}</th>
-            <th className="py-4 px-5">{t('filesPage.tableHeader.author')}</th>
-            <th className="py-4 px-5">Публичный</th>
-            <th className="py-4 px-5">{t('documentsPage.tableHeader.creationDate')}</th>
-            <th className="py-4 px-5">{t('documentsPage.tableHeader.updateDate')}</th>
-            <th className="py-4 px-5 text-center">{t('documentsPage.tableHeader.actions')}</th>
+            <th className="py-4 px-5 w-10">{t('files.tableHeader.fileName')}</th>
+            <th className="py-4 px-5">{t('files.tableHeader.fileType')}</th>
+            <th className="py-4 px-5">{t('files.tableHeader.author')}</th>
+            <th className="py-4 px-5">Миниматюра</th>
+            <th className="py-4 px-5">{t('files.tableHeader.creationDate')}</th>
+            <th className="py-4 px-5">{t('files.tableHeader.updateDate')}</th>
+            <th className="py-4 px-5 text-center">{t('files.tableHeader.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -81,12 +62,18 @@ export const FilesPage = () => {
               <td className="py-4 px-5">{file.filename}</td>
               <td className="py-4 px-5 truncate">{file.filetype}</td>
               <td className="py-4 px-5 truncate">{file.author}</td>
-              <td className="py-4 px-5 truncate">{file.publicEntity}</td>
+              <td className="py-4 px-5 truncate">
+                <img
+                  src={routes.thumbnailPath(file.id)}
+                  alt={file.filename}
+                  className="max-h-[100px] max-w-[100px] w-auto h-auto block"
+                />
+              </td>
               <td className="py-4 px-5">{file.creationDate ?? 'no data'}</td>
               <td className="py-4 px-5">{file.updateDate ?? 'no data'}</td>
               <td className="py-4 px-5 flex justify-around">
-                <ActionButton actionType="edit" onClick={() => handleEdit(file.id)} />
-                <ActionButton actionType="delete" onClick={() => handleDelete(file.id)} />
+                <ActionButton actionType="download" title={t('download')} onClick={(event) => handleDownload(event, file.id)} />
+                <ActionButton actionType="overview" title={t('see')} onClick={(event) => handleOverview(event, file.id)} />
               </td>
           </tr>
           ))}

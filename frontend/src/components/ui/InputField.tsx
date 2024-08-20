@@ -1,18 +1,23 @@
 import clsx from "clsx";
-import { DetailedHTMLProps, ForwardedRef, forwardRef, HtmlHTMLAttributes, useState } from "react";
+import { DetailedHTMLProps, ForwardedRef, forwardRef, InputHTMLAttributes, useState } from "react";
 import { FieldError } from "react-hook-form";
-import { ActionButton } from "../ActionButton";
+import { ActionButton } from "./ActionButton";
+import { InputLabel } from "./InputLabel";
+import { ErrorMessage } from "./ErrorMessage";
 
-export interface InputFieldProps extends DetailedHTMLProps<HtmlHTMLAttributes<HTMLDivElement>, HTMLDivElement> {
-  type?: 'text' | 'email' | 'password',
+export interface InputFieldProps extends DetailedHTMLProps<InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {
+  type?: 'text' | 'email' | 'password' | 'number',
   id?: string,
   error?: FieldError,
-  placeholder: string,
+  placeholder?: string,
+  label?: string,
   showActionButton?: boolean,
-  value?: string | number,
 }
 
-export const InputField = forwardRef(({ type = "text", id, error, placeholder, className, showActionButton = false, ...props }: InputFieldProps, ref: ForwardedRef<HTMLInputElement>) => {
+export const InputField = forwardRef(({
+  type = "text", id, error, placeholder, label,
+  className, showActionButton = false, ...props }: InputFieldProps,
+  ref: ForwardedRef<HTMLInputElement>) => {
   const [inputType, setInputType] = useState(type);
   const [passwordShown, setPasswordShown] = useState<boolean>(false);
 
@@ -23,16 +28,17 @@ export const InputField = forwardRef(({ type = "text", id, error, placeholder, c
 
   return (
     <div className={clsx(className, 'relative')}>
+      {label && <InputLabel htmlFor={label}>{label}</InputLabel>}
       <input
         type={inputType}
-        id={id}
-        className={clsx(error && "border-red-500", "block p-2 border border-slate-300 outline-sky-500 rounded-sm w-full focus:ring focus:ring-sky-200 focus:ring-opacity-50")}
+        id={label}
+        className={clsx(error ? "border-red-500" : 'border-slate-300', "block p-2 border  outline-sky-500 rounded-sm w-full focus:ring focus:ring-sky-200 focus:ring-opacity-50")}
         placeholder={placeholder}
         {...props}
         ref={ref}
       />
       {!error && showActionButton && <ActionButton className="absolute top-2 right-3" onClick={toggleShowPassword} actionType={passwordShown ? "hidePassword" : "showPassword"} />}
-      {error && <p className="absolute text-sm text-red-500">{error.message}</p>}
+      {error && <ErrorMessage>{error.message}</ErrorMessage>}
     </div>
   );
 });

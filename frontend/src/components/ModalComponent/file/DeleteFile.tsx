@@ -1,41 +1,39 @@
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 import { ButtonComponent } from "../../ui/ButtonComponent";
 import { closeModal, getCurrentDataId } from "../../../store/modalSlice";
-import { useDeleteDocMutation } from "../../../store/docsApi";
 import { routes } from "../../../routes";
+import { useDeleteFileMutation } from "../../../store/filesApi";
 
-export const DeleteDocument = () => {
+export const DeleteFile = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const id = useSelector(getCurrentDataId);
-
-  const [deleteDoc] = useDeleteDocMutation();
+  const [deleteFile] = useDeleteFileMutation();
 
   const handleClose = () => {
     dispatch(closeModal());
   };
 
   const handleDelete = () => {
-    deleteDoc(id)
+    deleteFile(id)
       .unwrap()
       .then(() => {
-        toast.success(t('documents.modal.delete.toast.success'));
+        toast.success(t('files.modal.delete.toast.success'));
       })
       .catch(() => {
-        toast.error(t('documents.modal.delete.toast.error'));
+        toast.error(t('files.modal.delete.toast.error'));
       });
     dispatch(closeModal());
-    navigate(routes.documentsRoute());
+    navigate(routes.filesRoute());
   };
-
   return (
     <>
-      <div className="mb-4 font-bold">{t('documents.modal.delete.areYouSure')}</div>
+      <div className="mb-4 font-bold">{t('files.modal.delete.areYouSure')}</div>
       <div className="flex justify-between gap-4">
         <ButtonComponent
           variant="outline"
@@ -51,5 +49,5 @@ export const DeleteDocument = () => {
         </ButtonComponent>
       </div>
     </>
-  );
+  )
 };

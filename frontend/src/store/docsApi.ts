@@ -1,18 +1,17 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import Cookies from "js-cookie";
-import { Role, RoleName } from "../interfaces";
+import { IDocument, Role, RoleName } from "../interfaces";
+import { IDocForm } from "../components/ModalComponent/document/docFormSchema";
+
 
 export const docsApi = createApi({
   reducerPath: "documents",
   baseQuery: fetchBaseQuery({
     baseUrl: 'http://localhost:8080/api/documents',
-    prepareHeaders: (headers) => {
-    },
     credentials: "include",
   }),
-  tagTypes: ["docs"],
+  tagTypes: ["docs", "doc"],
   endpoints: (builder) => ({
-    getDocs: builder.query({
+    getDocs: builder.query<IDocument[], RoleName[]>({
       query: (roles: RoleName[]) => {
         if (roles.includes("ROLE_ADMIN") || roles.includes("ROLE_MODERATOR")) {
           return { url: '' };
@@ -22,13 +21,14 @@ export const docsApi = createApi({
       providesTags: ["docs"],
     }),
 
-    getDoc: builder.query({
+    getDoc: builder.query<IDocument, string | undefined>({
       query: (id) => ({
         url: `/${id}`,
       }),
+      providesTags: ["doc"],
     }),
 
-    createDoc: builder.mutation({
+    createDoc: builder.mutation<void, IDocForm>({
       query: (data) => ({
         url: "",
         method: "POST",
@@ -37,7 +37,7 @@ export const docsApi = createApi({
       invalidatesTags: ["docs"],
     }),
 
-    deleteDoc: builder.mutation({
+    deleteDoc: builder.mutation<void, string | undefined>({
       query: (id) => ({
         url: `/${id}`,
         method: 'DELETE',
@@ -45,20 +45,20 @@ export const docsApi = createApi({
       invalidatesTags: ["docs"],
     }),
 
-    searchDoc: builder.query({   //pageNumber
-      query: (params) => ({
-        url: `/search?${params}`,
-      }),
-    }),
-
-    updateDoc: builder.mutation({
+    editDoc: builder.mutation<boolean, {data: IDocForm, id: string | undefined}>({
       query: ({data, id}) => ({
         url: `/for_admin/${id}`,
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: ["docs"],
-    })
+      invalidatesTags: ["docs", "doc"],
+    }),
+
+    searchDoc: builder.query({   //pageNumber
+      query: (params) => ({
+        url: `/search?${params}`,
+      }),
+    }),
   }),
 });
 
@@ -67,5 +67,5 @@ export const {
   useGetDocQuery,
   useDeleteDocMutation,
   useCreateDocMutation,
-  useUpdateDocMutation,
+  useEditDocMutation,
 } = docsApi;

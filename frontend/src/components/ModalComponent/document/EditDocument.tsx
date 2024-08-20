@@ -1,131 +1,137 @@
 import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "react-toastify";
 import { InputField } from "../../ui/InputField";
-import { TextArea } from "../../TextArea";
-import { MultiSelectComponent } from "../../MultiSelectComponent";
-import { SelectComponent } from "../../SelectComponent";
+import { TextArea } from "../../ui/TextArea";
+import { MultiSelectComponent } from "../../ui/MultiSelectComponent";
+import { SelectComponent } from "../../ui/SelectComponent";
 import { CheckBox } from "../../ui/CheckBox";
-import { ButtonComponent } from "../../ButtonComponent";
+import { ButtonComponent } from "../../ui/ButtonComponent";
+import isEqual from "lodash.isequal";
 
-import { useUpdateDocMutation as updateDoc, useGetDocQuery as getDoc } from "../../../store/docsApi";
+import { useEditDocMutation, useGetDocQuery as getDoc } from "../../../store/docsApi";
 import { useGetUsersQuery as getUsers } from "../../../store/usersApi";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../../../routes";
-import { useSelector } from "react-redux";
-import { getCurrentDataId } from "../../../store/modalSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { closeModal, getCurrentDataId } from "../../../store/modalSlice";
+import { useTranslation } from "react-i18next";
+import { editDocFormSchema, IDocForm } from "./docFormSchema";
+import { ISelectOption } from "../../../interfaces";
 
-export interface ICreateDocForm {
-  title: string,
-  number: number,
-  content: string,
-  authorId: number,
-  typeId: string,
-  availableFor: number[],
-  publicDocument: boolean,
-}
-
-const doc = {
-  id: 1,
-  title: 'title 1',
-  number: 11,
-  author: {
-    username: 'ghj',
-  },
-  content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  creationDate: "2024-09-04",
-  updateDate: "2024-10-04",
-  type: {
-    id: 1,
-    type: 'note'
-  }
-}
-
-const users = [
-  {
-    id: 1,
-    username: 'username1',
-    email: 'email1',
-    name: 'name1',
-    lastName: 'lastname1',
-    roles: ['ROLE_ADMIN'],
-  },
-  {
-    id: 2,
-    username: 'username2',
-    email: 'email2',
-    name: 'name2',
-    lastName: 'lastname2',
-    roles: ['ROLE_ADMIN'],
-  },
-  {
-    id: 3,
-    username: 'username3',
-    email: 'email3',
-    name: 'name3',
-    lastName: 'lastname3',
-    roles: ['ROLE_ADMIN', 'ROLE_USER', 'ROLE_MODERATOR'],
-  },
+export const selectTypeOptions: ISelectOption[] = [
+  { value: 1, label: 'Заметка' },
+  { value: 2, label: 'Отчет' },
+  { value: 3, label: 'Презентация' },
+  { value: 4, label: 'Статья' },
+  { value: 5, label: 'По умолчанию???' },
 ];
-export const EditDocument = () => {
-  const navigate = useNavigate();
-  const { register, control, setFocus, handleSubmit, formState: { errors }, reset, clearErrors, getValues, setValue } = useForm<ICreateDocForm>({ defaultValues: { publicDocument: false } });
-  const { data: users } = getUsers();
-  const options = users?.map((user) => ({ label: user.name, value: user.id })) ?? [{ label: '', value: 0 }];
-   
-  const id = useSelector(getCurrentDataId);
-  // const { data: doc } = getDoc(id);
 
-  const onSubmit = (data) => {
-    console.log(data)
-    // updateDoc(data);
-    // navigate(routes.documentsRoute());
+export const EditDocument = () => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const id = useSelector(getCurrentDataId);
+
+  const { data: users } = getUsers();
+  const { data: doc } = getDoc(id);
+  const [editDoc] = useEditDocMutation();
+
+  const defaultValues = {
+    title: doc?.title,
+    number: doc?.number,
+    content: doc?.content,
+    authorId: doc?.author.idUser,
+    type_id: doc?.type.id,
+    available_for: doc?.available_for,
+    public_document: !!doc?.public_document,
+  };
+
+  const availableForOptions = users?.map((user) => ({ label: user.name, value: user.id })) ?? [{ label: '', value: 0 }];
+  const { register, control, handleSubmit, formState: { errors }, setValue, getValues } = useForm<IDocForm>({ defaultValues, resolver: zodResolver(editDocFormSchema)  });
+
+  const onSubmit = (data: IDocForm) => {
+    if (isEqual(data, defaultValues)) {
+      dispatch(closeModal());
+    } else {
+      editDoc({ data, id })
+        .unwrap()
+        .then(() => {
+          toast.success(t('documents.modal.edit.toast.success'));
+        })
+        .catch(() => {
+          toast.error(t('documents.modal.edit.toast.error'));
+        });
+      dispatch(closeModal());
+      navigate(routes.documentsRoute());
+    }
   };
 
   return (
     <form className="flex flex-col gap-7" onSubmit={handleSubmit(onSubmit)}>
       <InputField
-        placeholder="title"
-        value={doc.title}
         {...register('title')}
+        label={t('documents.modal.form.labels.title')}
+        error={errors.title}
       />
       <InputField
-        placeholder="number это надо?"
-        value={doc.number}
         {...register('number')}
+        label={t('documents.modal.form.labels.number')}
+        error={errors.number}
+      />
+      <InputField
+        {...register('authorId')}
+        label={t('documents.modal.form.labels.authorId')}
+        error={errors.authorId}
       />
       <TextArea
-        placeholder="content"
-        value={doc.content}
         {...register('content')}
+        label={t('documents.modal.form.labels.content')}
+        error={errors.content}
       />
       <Controller
         control={control}
-        name='typeId'
+        name='type_id'
         render={({ field }) => (
           <SelectComponent
-            placeholder="Тип документа"
+            {...field}
+            error={errors.type_id}
+            placeholder={t('documents.modal.form.placeholders.type')}
             onChange={field.onChange}
-
+            label={t('documents.modal.form.labels.type')}
+            selectOptions={selectTypeOptions}
           />
         )}
       />
       <Controller
         control={control}
-        name='availableFor'
+        name='available_for'
         render={({ field }) => (
           <MultiSelectComponent
-            placeholder="Сделать доступным для:"
+            {...field}
+            error={errors.available_for}
+            label={t('documents.modal.form.labels.availableFor')}
             onChange={field.onChange}
-            selectOptions={options}
+            selectOptions={availableForOptions}
+            placeholder={t('documents.modal.form.placeholders.availableFor')}
+            required={false}
           />
         )}
       />
       <div className="flex justify-between">
-        <CheckBox
-          setValue={setValue}
-          label="Сделать документ публичным"
-          {...register('publicDocument')}
+        <Controller
+          control={control}
+          name='public_document'
+          render={({ field }) => (
+            <CheckBox
+              {...field}
+              checked={!!field.value}
+              label={t('documents.modal.form.labels.publicDocument')}
+              onChange={(e) => setValue('public_document', e.target.checked)}
+            />
+          )}
         />
-        <ButtonComponent type="submit" variant="primary">Добавить документ</ButtonComponent>
+        <ButtonComponent type="submit" variant="primary">{t('documents.modal.edit.button')}</ButtonComponent>
       </div>
     </form>
   );
